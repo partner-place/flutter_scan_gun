@@ -4,18 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scan_gun/input/text_input_focus_node.dart';
 
-// 使用方法：在runApp()方法前调用 TextInputBinding.ensureInitialized();
+// 使用方法：在runApp()方法前初始化
 class TextInputBinding extends WidgetsFlutterBinding
-    with TextInputBindingMixin {
-  /// 确保应用只初始化一次 Binding，防止在外部已调用其它初始化的场景下重复实例化产生内存泄漏
-  static WidgetsBinding ensureInitialized() {
-    try {
-      return WidgetsBinding.instance;
-    } catch (e) {
-      return TextInputBinding();
-    }
-  }
-}
+    with TextInputBindingMixin {}
 
 mixin TextInputBindingMixin on WidgetsFlutterBinding {
   @override
