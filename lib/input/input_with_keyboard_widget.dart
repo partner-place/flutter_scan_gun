@@ -30,10 +30,12 @@ class InputWithKeyboardWidgetState extends State<InputWithKeyboardWidget> {
   final controller = TextEditingController();
   late final TextInputFocusNode focusNode;
   late final Widget edtWidget;
+  late final bool _ownsFocusNode;
 
   @override
   void initState() {
     super.initState();
+    _ownsFocusNode = widget.focusNode == null;
     focusNode = widget.focusNode ?? TextInputFocusNode();
     edtWidget = RepaintBoundary(
       child: EditableText(
@@ -65,6 +67,15 @@ class InputWithKeyboardWidgetState extends State<InputWithKeyboardWidget> {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
     //结束后继续获取焦点
     // requestKeyboard();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    if (_ownsFocusNode) {
+      focusNode.dispose();
+    }
+    super.dispose();
   }
 
   @override

@@ -36,6 +36,8 @@ class ScanMonitorWidget extends StatefulWidget {
 class _ScanMonitorWidgetState extends State<ScanMonitorWidget> {
   late final TextInputFocusNode scanNode;
   late final GlobalKey<EditableTextState> scanKey;
+  late final bool _ownsScanNode;
+  late final Key _visibilityKey;
 
   Timer? _focusLooper;
   bool _isVisible = false;
@@ -43,6 +45,8 @@ class _ScanMonitorWidgetState extends State<ScanMonitorWidget> {
   @override
   void initState() {
     super.initState();
+    _visibilityKey = widget.key ?? GlobalKey(debugLabel: 'default_scan_key');
+    _ownsScanNode = widget.scanNode == null;
     scanNode = widget.scanNode ?? TextInputFocusNode();
     scanKey = widget.scanKey ?? GlobalKey<EditableTextState>();
     widget.textFiledNode?.addListener(_listenTextFiledFocus);
@@ -52,11 +56,14 @@ class _ScanMonitorWidgetState extends State<ScanMonitorWidget> {
   void dispose() {
     _closeFocusLooper();
     widget.textFiledNode?.removeListener(_listenTextFiledFocus);
+    if (_ownsScanNode) {
+      scanNode.dispose();
+    }
     super.dispose();
   }
 
   void _requestFocus() {
-    if (!scanNode.hasFocus){
+    if (!scanNode.hasFocus) {
       scanNode.requestFocus();
     }
     scanKey.currentState?.requestKeyboard();
@@ -82,7 +89,8 @@ class _ScanMonitorWidgetState extends State<ScanMonitorWidget> {
   //保证扫码焦点不消失
   void _checkScanAble() {
     if (_isVisible) {
-      final textFileHasFocus = widget.textFiledNode != null && widget.textFiledNode!.hasFocus;
+      final textFileHasFocus =
+          widget.textFiledNode != null && widget.textFiledNode!.hasFocus;
       if (!textFileHasFocus) {
         _requestFocus();
       }
@@ -109,15 +117,15 @@ class _ScanMonitorWidgetState extends State<ScanMonitorWidget> {
       },
     );
     return VisibilityDetector(
-            key: widget.key ?? GlobalKey(debugLabel: 'default_scan_key'),
-            child: child,
-            onVisibilityChanged: (visibilityInfo) {
-              final newVisible = visibilityInfo.visibleFraction > 0;
-              if (_isVisible != newVisible) {
-                _isVisible = newVisible;
-                _checkScanAble();
-              }
-            },
-          );
+      key: _visibilityKey,
+      child: child,
+      onVisibilityChanged: (visibilityInfo) {
+        final newVisible = visibilityInfo.visibleFraction > 0;
+        if (_isVisible != newVisible) {
+          _isVisible = newVisible;
+          _checkScanAble();
+        }
+      },
+    );
   }
 }
