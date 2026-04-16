@@ -85,10 +85,13 @@ class InputWithKeyboardWidgetState extends State<InputWithKeyboardWidget> {
         : widget.childBuilder!(context);
     return Stack(
       children: [
-        //让输入框保持隐藏
-        Offstage(
+        // 用 Positioned(-9999)：坐标永远固定在屏幕外 → Matrix4 恒定 → engine 不需要更新缓存
+        Positioned(
+          left: -9999,
+          top: -9999,
+          width: 1,
+          height: 1,
           child: edtWidget,
-          offstage: true,
         ),
         child,
       ],
