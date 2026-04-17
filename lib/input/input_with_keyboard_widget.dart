@@ -30,10 +30,12 @@ class InputWithKeyboardWidgetState extends State<InputWithKeyboardWidget> {
   final controller = TextEditingController();
   late final TextInputFocusNode focusNode;
   late final Widget edtWidget;
+  late final bool _ownsFocusNode;
 
   @override
   void initState() {
     super.initState();
+    _ownsFocusNode = widget.focusNode == null;
     focusNode = widget.focusNode ?? TextInputFocusNode();
     edtWidget = RepaintBoundary(
       child: EditableText(
@@ -68,16 +70,28 @@ class InputWithKeyboardWidgetState extends State<InputWithKeyboardWidget> {
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    if (_ownsFocusNode) {
+      focusNode.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Widget child = widget.childBuilder == null
         ? Container()
         : widget.childBuilder!(context);
     return Stack(
       children: [
-        //让输入框保持隐藏
-        Offstage(
+        // 用 Positioned(-9999)：坐标永远固定在屏幕外 → Matrix4 恒定 → engine 不需要更新缓存
+        Positioned(
+          left: -9999,
+          top: -9999,
+          width: 1,
+          height: 1,
           child: edtWidget,
-          offstage: true,
         ),
         child,
       ],
